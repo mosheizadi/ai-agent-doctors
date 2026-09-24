@@ -1,0 +1,1081 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="robots" content="noindex, nofollow">
+<title>CoordinatorOS — Live Demo (Fictional Data)</title>
+<style>
+  :root{
+    --bg:#f6f7f9; --panel:#ffffff; --panel-2:#fbfbfd;
+    --ink:#0f172a; --ink-2:#334155; --ink-3:#64748b; --line:#e5e7eb;
+    --brand:#0f766e; --brand-2:#0d9488; --brand-ink:#ecfdf5;
+    --green:#059669; --green-bg:#ecfdf5;
+    --amber:#b45309; --amber-bg:#fffbeb;
+    --orange:#c2410c; --orange-bg:#fff7ed;
+    --rose:#be123c; --rose-bg:#fff1f2;
+    --blue:#1d4ed8; --blue-bg:#eff6ff;
+    --shadow:0 1px 2px rgba(15,23,42,.04),0 8px 24px rgba(15,23,42,.06);
+    --radius:14px; --radius-sm:10px;
+  }
+  html[data-theme="dark"]{
+    --bg:#0b1220; --panel:#111a2e; --panel-2:#0f1729;
+    --ink:#e5e7eb; --ink-2:#cbd5e1; --ink-3:#94a3b8; --line:#1f2a44;
+    --brand:#2dd4bf; --brand-2:#14b8a6; --brand-ink:#042f2e;
+    --green:#34d399; --green-bg:#052e22;
+    --amber:#fbbf24; --amber-bg:#3a2a05;
+    --orange:#fb923c; --orange-bg:#3a1a05;
+    --rose:#fb7185; --rose-bg:#3a0a1a;
+    --blue:#60a5fa; --blue-bg:#0a1a3a;
+    --shadow:0 1px 2px rgba(0,0,0,.4),0 8px 24px rgba(0,0,0,.35);
+  }
+  *{box-sizing:border-box}
+  html,body{margin:0;padding:0;background:var(--bg);color:var(--ink);
+    font-family:'Inter',-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Helvetica,Arial,sans-serif;
+    font-size:15px;line-height:1.5;-webkit-font-smoothing:antialiased}
+  button{font-family:inherit;cursor:pointer}
+  .app{display:grid;grid-template-columns:250px 1fr;min-height:100vh}
+
+  /* Sidebar */
+  .side{background:var(--panel);border-right:1px solid var(--line);
+    padding:20px 14px;position:sticky;top:0;height:100vh;overflow-y:auto}
+  .brand{display:flex;align-items:center;gap:10px;padding:4px 8px 16px}
+  .brand .logo{width:34px;height:34px;border-radius:9px;
+    background:linear-gradient(135deg,var(--brand),var(--brand-2));
+    display:grid;place-items:center;color:#fff;font-weight:800;font-size:16px}
+  .brand .name{font-weight:700;font-size:15px;letter-spacing:-.01em}
+  .brand .sub{font-size:11px;color:var(--ink-3);letter-spacing:.04em;text-transform:uppercase}
+  .nav{display:flex;flex-direction:column;gap:2px;margin-top:6px}
+  .nav button{display:flex;align-items:center;gap:10px;width:100%;text-align:left;
+    padding:9px 10px;border:0;background:transparent;border-radius:9px;
+    color:var(--ink-2);font-size:13.5px;font-weight:500}
+  .nav button:hover{background:var(--panel-2);color:var(--ink)}
+  .nav button.active{background:var(--brand-ink);color:var(--brand);font-weight:600}
+  .nav .ico{width:18px;text-align:center;font-size:14px;opacity:.85}
+  .nav .tag{margin-left:auto;font-size:10px;font-weight:700;padding:2px 6px;
+    border-radius:6px;background:var(--amber-bg);color:var(--amber)}
+  .side-foot{margin-top:16px;padding:10px 10px 0;border-top:1px solid var(--line);
+    font-size:11px;color:var(--ink-3);line-height:1.5}
+  .theme-btn{margin-top:10px;width:100%;padding:8px;border:1px solid var(--line);
+    border-radius:9px;background:var(--panel-2);color:var(--ink-2);font-size:12px}
+
+  /* Main */
+  .main{padding:26px 30px 80px;max-width:1240px}
+  .top{display:flex;align-items:flex-start;justify-content:space-between;gap:16px;margin-bottom:22px;flex-wrap:wrap}
+  .hello h1{margin:0 0 4px;font-size:22px;letter-spacing:-.02em}
+  .hello p{margin:0;color:var(--ink-3);font-size:13.5px}
+  .demo-pill{display:inline-flex;align-items:center;gap:7px;padding:6px 11px;
+    border-radius:999px;background:var(--amber-bg);color:var(--amber);
+    font-size:11.5px;font-weight:600;white-space:nowrap}
+  .dot{width:7px;height:7px;border-radius:50%;background:currentColor}
+
+  /* KPIs */
+  .kpis{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:22px}
+  .kpi{background:var(--panel);border:1px solid var(--line);border-radius:var(--radius);
+    padding:14px 16px;box-shadow:var(--shadow)}
+  .kpi .v{font-size:24px;font-weight:700;letter-spacing:-.03em}
+  .kpi .l{font-size:12px;color:var(--ink-3);margin-top:2px}
+
+  /* Cards */
+  .grid{display:grid;gap:14px}
+  .g2{grid-template-columns:1fr 1fr}
+  .g3{grid-template-columns:repeat(3,1fr)}
+  .card{background:var(--panel);border:1px solid var(--line);border-radius:var(--radius);
+    padding:18px;box-shadow:var(--shadow)}
+  .card h2{margin:0 0 14px;font-size:14.5px;font-weight:700;letter-spacing:-.01em}
+  .muted{color:var(--ink-3);font-size:12.5px}
+
+  /* Patient rows */
+  .prow{padding:13px 0;border-top:1px solid var(--line)}
+  .prow:first-of-type{border-top:0}
+  .prow .top-line{display:flex;justify-content:space-between;gap:12px;align-items:baseline}
+  .prow .who{font-weight:600;font-size:13.5px}
+  .prow .what{font-size:12.5px;color:var(--ink-2)}
+  .prow .when{font-size:12px;color:var(--ink-3);white-space:nowrap}
+  .chips{display:flex;flex-wrap:wrap;gap:6px;margin-top:9px}
+  .chip{font-size:11px;font-weight:600;padding:3px 9px;border-radius:999px;
+    border:1px solid var(--line);background:var(--panel-2);color:var(--ink-2)}
+  .chip.ok{background:var(--green-bg);color:var(--green);border-color:transparent}
+  .chip.warn{background:var(--amber-bg);color:var(--amber);border-color:transparent}
+  .chip.bad{background:var(--rose-bg);color:var(--rose);border-color:transparent}
+  .chip.now{background:var(--brand);color:#fff;border-color:transparent}
+  .chip.done{opacity:.5;text-decoration:line-through}
+
+  /* Feed */
+  .feed{display:flex;flex-direction:column;gap:0}
+  .feed .item{display:grid;grid-template-columns:64px 1fr;gap:12px;
+    padding:11px 0;border-top:1px solid var(--line)}
+  .feed .item:first-child{border-top:0}
+  .feed .t{font-size:11.5px;color:var(--ink-3);font-variant-numeric:tabular-nums;padding-top:1px}
+  .feed .m{font-size:13px;color:var(--ink-2)}
+  .feed .m b{color:var(--ink);font-weight:600}
+
+  /* Tables */
+  table{width:100%;border-collapse:collapse;font-size:13px}
+  th{text-align:left;font-size:11px;text-transform:uppercase;letter-spacing:.06em;
+    color:var(--ink-3);font-weight:600;padding:8px 10px;border-bottom:1px solid var(--line)}
+  td{padding:11px 10px;border-bottom:1px solid var(--line);vertical-align:top}
+  tr:last-child td{border-bottom:0}
+
+  /* Buttons */
+  .btn{display:inline-flex;align-items:center;gap:7px;padding:8px 14px;border-radius:9px;
+    border:1px solid var(--line);background:var(--panel-2);color:var(--ink);
+    font-size:13px;font-weight:600}
+  .btn:hover{border-color:var(--ink-3)}
+  .btn.primary{background:var(--brand);border-color:var(--brand);color:#fff}
+  .btn.primary:hover{background:var(--brand-2)}
+  .btn.good{background:var(--green-bg);color:var(--green);border-color:transparent}
+  .btn.warn{background:var(--amber-bg);color:var(--amber);border-color:transparent}
+  .btn.bad{background:var(--rose-bg);color:var(--rose);border-color:transparent}
+  .btn.sm{padding:6px 10px;font-size:12px}
+  .btn-row{display:flex;gap:8px;flex-wrap:wrap;margin-top:12px}
+
+  /* Approval cards */
+  .appr{border:1px solid var(--line);border-radius:var(--radius-sm);
+    padding:14px;margin-bottom:11px;background:var(--panel-2)}
+  .appr .h{display:flex;justify-content:space-between;gap:10px;align-items:center;margin-bottom:7px}
+  .appr .kind{font-size:11px;font-weight:700;letter-spacing:.05em;text-transform:uppercase;color:var(--ink-3)}
+  .appr .draft{font-size:13px;color:var(--ink-2);background:var(--panel);
+    border:1px dashed var(--line);border-radius:8px;padding:10px;margin:8px 0;white-space:pre-wrap}
+  .appr .meta{font-size:11.5px;color:var(--ink-3)}
+
+  /* Chat */
+  .chat-wrap{display:flex;flex-direction:column;height:580px;
+    border:1px solid var(--line);border-radius:var(--radius);background:var(--panel);overflow:hidden}
+  .chat-head{padding:12px 16px;border-bottom:1px solid var(--line);
+    display:flex;justify-content:space-between;align-items:center;background:var(--panel-2)}
+  .chat-head .who{font-weight:600;font-size:13.5px}
+  .chat-head .status{font-size:11.5px;color:var(--green);display:flex;align-items:center;gap:6px}
+  .chat-body{flex:1;overflow-y:auto;padding:16px;display:flex;flex-direction:column;gap:12px;background:var(--panel)}
+  .msg{max-width:78%;padding:10px 13px;border-radius:14px;font-size:13.5px;line-height:1.45;white-space:pre-wrap}
+  .msg.bot{background:var(--panel-2);border:1px solid var(--line);align-self:flex-start;border-bottom-left-radius:4px}
+  .msg.me{background:var(--brand);color:#fff;align-self:flex-end;border-bottom-right-radius:4px}
+  .msg.sys{align-self:center;font-size:11.5px;color:var(--ink-3);background:transparent;padding:4px}
+  .chat-input{display:flex;gap:8px;padding:12px;border-top:1px solid var(--line);background:var(--panel-2)}
+  .chat-input input{flex:1;padding:10px 12px;border:1px solid var(--line);border-radius:9px;
+    background:var(--panel);color:var(--ink);font-size:13.5px;font-family:inherit}
+  .chat-input input:focus{outline:2px solid var(--brand);outline-offset:-1px}
+  .scen{display:flex;gap:6px;flex-wrap:wrap;padding:10px 12px;border-top:1px solid var(--line);background:var(--panel)}
+  .scen button{font-size:11.5px;padding:5px 10px;border-radius:999px;border:1px solid var(--line);
+    background:var(--panel-2);color:var(--ink-2)}
+  .scen button:hover{border-color:var(--brand);color:var(--brand)}
+  .typing span{display:inline-block;width:6px;height:6px;margin:0 1px;border-radius:50%;
+    background:var(--ink-3);animation:b 1.2s infinite}
+  .typing span:nth-child(2){animation-delay:.2s}
+  .typing span:nth-child(3){animation-delay:.4s}
+  @keyframes b{0%,60%,100%{opacity:.25;transform:translateY(0)}30%{opacity:1;transform:translateY(-3px)}}
+
+  /* Consent rows */
+  .consent-row{display:flex;justify-content:space-between;gap:10px;padding:9px 0;
+    border-top:1px solid var(--line);font-size:13px}
+  .consent-row:first-child{border-top:0}
+  .consent-row .lbl{color:var(--ink-2)}
+  .consent-row .val{font-weight:600;text-align:right}
+  .consent-row .val.yes{color:var(--green)}
+  .consent-row .val.no{color:var(--rose)}
+  .consent-row .val.part{color:var(--amber)}
+
+  /* ROI */
+  .roi-grid{display:grid;grid-template-columns:1fr 1fr;gap:20px}
+  .roi-field{margin-bottom:12px}
+  .roi-field label{display:block;font-size:12px;color:var(--ink-3);margin-bottom:5px;font-weight:600}
+  .roi-field input{width:100%;padding:9px 11px;border:1px solid var(--line);border-radius:9px;
+    background:var(--panel-2);color:var(--ink);font-size:14px;font-family:inherit}
+  .roi-field input:focus{outline:2px solid var(--brand);outline-offset:-1px}
+  .roi-out{background:var(--brand-ink);border-radius:var(--radius-sm);padding:18px}
+  .roi-out .big{font-size:30px;font-weight:800;letter-spacing:-.03em;color:var(--brand)}
+  .roi-out .sub{font-size:12.5px;color:var(--ink-2);margin-top:4px}
+  .roi-out hr{border:0;border-top:1px solid var(--line);margin:14px 0}
+
+  /* Matrix */
+  .matrix td:first-child{font-weight:600;width:34%}
+  .matrix .yes{color:var(--green);font-weight:700}
+  .matrix .no{color:var(--rose);font-weight:700}
+  .matrix .part{color:var(--amber);font-weight:700}
+
+  /* Rules */
+  .rule{display:flex;gap:10px;padding:10px 0;border-top:1px solid var(--line);font-size:13px}
+  .rule:first-child{border-top:0}
+  .rule .x{color:var(--rose);font-weight:800;flex-shrink:0}
+
+  /* Forms */
+  .form-row{margin-bottom:14px}
+  .form-row label{display:block;font-size:12px;font-weight:600;color:var(--ink-3);margin-bottom:5px}
+  .form-row input{width:100%;padding:10px 12px;border:1px solid var(--line);border-radius:9px;
+    background:var(--panel-2);color:var(--ink);font-size:14px;font-family:inherit}
+  .form-row input:focus{outline:2px solid var(--brand);outline-offset:-1px}
+
+  /* Mobile */
+  .mobile-nav{display:none}
+  @media (max-width:860px){
+    .app{grid-template-columns:1fr}
+    .side{display:none}
+    .main{padding:16px 14px 96px;max-width:100%}
+    .kpis{grid-template-columns:1fr 1fr}
+    .g2,.g3,.roi-grid{grid-template-columns:1fr}
+    .hello h1{font-size:19px}
+    .mobile-nav{display:flex;position:fixed;bottom:0;left:0;right:0;z-index:50;
+      background:var(--panel);border-top:1px solid var(--line);
+      padding:8px 6px calc(8px + env(safe-area-inset-bottom));gap:2px;overflow-x:auto}
+    .mobile-nav button{flex:0 0 auto;display:flex;flex-direction:column;align-items:center;gap:2px;
+      padding:6px 10px;border:0;background:transparent;color:var(--ink-3);
+      font-size:10px;font-weight:600;border-radius:9px;min-width:64px}
+    .mobile-nav button.active{color:var(--brand);background:var(--brand-ink)}
+    .mobile-nav .ico{font-size:16px}
+    .chat-wrap{height:70vh}
+  }
+  @media (max-width:420px){ .kpis{grid-template-columns:1fr} }
+  .view{display:none}
+  .view.active{display:block;animation:fade .18s ease}
+  @keyframes fade{from{opacity:0;transform:translateY(4px)}to{opacity:1;transform:none}}
+
+  /* Print leave-behind */
+  .print-sheet{display:none}
+  @media print{
+    .side,.mobile-nav,.no-print{display:none !important}
+    .app{display:block}
+    .main{padding:0;max-width:100%}
+    .view{display:none !important}
+    .print-sheet{display:block !important;padding:20px}
+    body{background:#fff;color:#000;font-size:11pt}
+    .print-sheet h1{font-size:20pt;margin:0 0 4pt}
+    .print-sheet h2{font-size:13pt;margin:14pt 0 6pt;border-bottom:1px solid #ccc;padding-bottom:3pt}
+    .print-sheet table{font-size:10pt}
+    .print-sheet td,.print-sheet th{padding:5pt 6pt}
+    .print-sheet .row{display:flex;gap:14pt;margin-bottom:10pt}
+    .print-sheet .col{flex:1}
+    .print-sheet .box{border:1px solid #ccc;border-radius:6pt;padding:8pt;margin-bottom:8pt}
+  }
+</style>
+</head>
+<body>
+<div class="app">
+
+  <!-- ================= SIDEBAR ================= -->
+  <aside class="side">
+    <div class="brand">
+      <div class="logo">C</div>
+      <div><div class="name">CoordinatorOS</div><div class="sub">Live Demo v3</div></div>
+    </div>
+    <nav class="nav" id="nav"></nav>
+    <div class="side-foot">
+      Fictional patients, providers, and numbers. No real patient data is used.
+      <button class="theme-btn" id="themeBtn">Toggle light / dark</button>
+      <button class="theme-btn" id="printBtn" style="margin-top:6px">Print leave-behind</button>
+    </div>
+  </aside>
+
+  <!-- ================= MAIN ================= -->
+  <main class="main">
+
+    <!-- ========== TODAY ========== -->
+    <section class="view active" id="v-today">
+      <div class="top">
+        <div class="hello">
+          <h1 id="greeting">Good morning, Dr. Morgan.</h1>
+          <p id="subGreeting">Your whole patient journey on one screen: new patients, today's surgeries, and everyone recovering.</p>
+        </div>
+        <span class="demo-pill"><span class="dot"></span> Demo · Fictional data</span>
+      </div>
+
+      <div class="kpis">
+        <div class="kpi"><div class="v">61</div><div class="l">messages answered since 6pm</div></div>
+        <div class="kpi"><div class="v">9</div><div class="l">consults booked overnight</div></div>
+        <div class="kpi"><div class="v">11</div><div class="l">patients in recovery</div></div>
+        <div class="kpi"><div class="v">41 h</div><div class="l">staff time saved this week</div></div>
+      </div>
+
+      <div class="card" style="margin-bottom:14px">
+        <h2>Today's surgeries</h2>
+        <div class="prow">
+          <div class="top-line">
+            <div><span class="who">Patient S.N., 41</span><div class="what">Abdominoplasty · 3.5 h · general anesthesia</div></div>
+            <div class="when">7:30</div>
+          </div>
+          <div class="chips">
+            <span class="chip ok">✓ Consent record</span>
+            <span class="chip ok">✓ Clearance</span>
+            <span class="chip ok">✓ Balance paid</span>
+            <span class="chip ok">✓ Ride home</span>
+            <span class="chip ok">✓ Home RN booked</span>
+            <span class="chip now">Ready</span>
+          </div>
+        </div>
+        <div class="prow">
+          <div class="top-line">
+            <div><span class="who">Patient A.R., 34</span><div class="what">Rhinoplasty · 2.5 h · general anesthesia</div></div>
+            <div class="when">11:30</div>
+          </div>
+          <div class="chips">
+            <span class="chip ok">✓ Consent record</span>
+            <span class="chip ok">✓ Labs</span>
+            <span class="chip ok">✓ Balance paid</span>
+            <span class="chip bad">⚠ Ride home missing</span>
+            <span class="chip warn">Action needed</span>
+          </div>
+        </div>
+        <div class="prow">
+          <div class="top-line">
+            <div><span class="who">Patient D.L., 52</span><div class="what">Upper blepharoplasty · 1 h · local + sedation</div></div>
+            <div class="when">2:30</div>
+          </div>
+          <div class="chips">
+            <span class="chip ok">✓ Consent record</span>
+            <span class="chip ok">✓ Balance paid</span>
+            <span class="chip ok">✓ Office follow-up</span>
+            <span class="chip ok">✓ Ride home</span>
+            <span class="chip warn">⚠ $2,400 due</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="grid g2" style="margin-bottom:14px">
+        <div class="card">
+          <h2>Patients recovering right now</h2>
+          <div class="prow">
+            <div class="top-line">
+              <div><span class="who">S.N. · Abdominoplasty · Day 0</span><div class="what">Home RN, 24 h · Provider A</div></div>
+              <div class="when">Nurse meets at surgery center 11:00</div>
+            </div>
+            <div class="chips">
+              <span class="chip done">Surgery</span>
+              <span class="chip now">RN overnight</span>
+              <span class="chip">Day 1 visit</span>
+              <span class="chip">Day 7 office</span>
+              <span class="chip">Week 3</span>
+              <span class="chip">3 months</span>
+            </div>
+          </div>
+          <div class="prow">
+            <div class="top-line">
+              <div><span class="who">J.W. · Facelift · Day 3</span><div class="what">Home RN, 12 h · Provider A</div></div>
+              <div class="when" style="color:var(--rose);font-weight:600">RN report flagged: left-side swelling</div>
+            </div>
+            <div class="chips">
+              <span class="chip done">Surgery</span>
+              <span class="chip done">Day 1</span>
+              <span class="chip done">Day 2</span>
+              <span class="chip now">Day 3 RN</span>
+              <span class="chip">Day 7 office</span>
+              <span class="chip">3 months</span>
+            </div>
+          </div>
+          <div class="prow">
+            <div class="top-line">
+              <div><span class="who">K.P. · Breast augmentation · Day 5</span><div class="what">Office follow-up</div></div>
+              <div class="when" style="color:var(--green);font-weight:600">Day 5 check-in answered, no concerns</div>
+            </div>
+            <div class="chips">
+              <span class="chip done">Surgery</span>
+              <span class="chip done">Day 1 call</span>
+              <span class="chip done">Day 5 check-in</span>
+              <span class="chip now">Day 7 office</span>
+              <span class="chip">6 weeks</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="card">
+          <h2>What the agents did overnight</h2>
+          <div class="feed">
+            <div class="item"><div class="t">11:48p</div><div class="m"><b>Leads.</b> Instagram rhinoplasty question answered in 90 seconds. Consult booked Thursday 3pm.</div></div>
+            <div class="item"><div class="t">12:40a</div><div class="m"><b>Recovery care.</b> Out-of-town patient M.T. sent three recovery options. Coordinator call booked.</div></div>
+            <div class="item"><div class="t">1:02a</div><div class="m"><b>Leads.</b> Missed call at 12:58a. Text-back sent. Patient booked online.</div></div>
+            <div class="item"><div class="t">5:30a</div><div class="m"><b>Readiness.</b> 2:30 case: $2,400 unpaid. Reminder sent. Front desk notified.</div></div>
+            <div class="item"><div class="t">6:00a</div><div class="m"><b>Readiness.</b> K.M. reported GLP-1 medication on intake. Flagged for surgeon + anesthesia.</div></div>
+            <div class="item"><div class="t">8:13a</div><div class="m"><b>Recovery care.</b> J.W. nurse report matched red-flag list. You paged. You called back 8:21a.</div></div>
+            <div class="item"><div class="t">8:30a</div><div class="m"><b>Consent record.</b> T.B. missed Day 7 visit. Rebooked for tomorrow and logged.</div></div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ========== APPROVALS ========== -->
+    <section class="view" id="v-approvals">
+      <div class="top"><div class="hello"><h1>Needs your OK</h1>
+      <p>Everything clinical or involving money waits here. Nothing goes out without a human.</p></div></div>
+      <div id="approvalList"></div>
+    </section>
+
+    <!-- ========== LEADS ========== -->
+    <section class="view" id="v-leads">
+      <div class="top"><div class="hello"><h1>Leads &amp; consults</h1>
+      <p>Every channel in one inbox. Lead score, source, and next step.</p></div></div>
+      <div class="card">
+        <table>
+          <thead><tr><th>Patient</th><th>Channel</th><th>Interest</th><th>Score</th><th>Status</th><th>Next step</th></tr></thead>
+          <tbody id="leadRows"></tbody>
+        </table>
+      </div>
+    </section>
+
+    <!-- ========== CHAT ========== -->
+    <section class="view" id="v-chat">
+      <div class="top"><div class="hello"><h1>Talk to the AI</h1>
+      <p>This is what a patient sees. The AI never gives medical advice and always discloses it is an AI.</p></div></div>
+      <div class="chat-wrap">
+        <div class="chat-head">
+          <div>
+            <div class="who" id="chatTitle">Newport Aesthetic Surgery · AI Assistant</div>
+            <div class="status"><span class="dot"></span> Online · AI (not a nurse or doctor)</div>
+          </div>
+        </div>
+        <div class="chat-body" id="chatBody"></div>
+        <div class="scen" id="scenRow"></div>
+        <form class="chat-input" id="chatForm">
+          <input id="chatInput" placeholder="Type a message as a patient…" autocomplete="off">
+          <button class="btn primary" type="submit">Send</button>
+        </form>
+      </div>
+    </section>
+
+    <!-- ========== READINESS ========== -->
+    <section class="view" id="v-readiness">
+      <div class="top"><div class="hello"><h1>Surgery readiness</h1>
+      <p>72 hours before surgery, every box must be green or the case is flagged.</p></div></div>
+      <div class="grid g2" id="readinessCards"></div>
+    </section>
+
+    <!-- ========== CONSENT ========== -->
+    <section class="view" id="v-consent">
+      <div class="top"><div class="hello"><h1>Consent &amp; Expectations Record</h1>
+      <p>Neutral, time-stamped documentation. Records what was shown, what was acknowledged, and what was asked. Does not judge the patient.</p></div></div>
+      <div class="card">
+        <h2>Patient T.B. · Rhinoplasty · Consult 2026-09-12</h2>
+        <div class="consent-row"><span class="lbl">Education module viewed</span><span class="val">2026-09-12 · 2:14 PM</span></div>
+        <div class="consent-row"><span class="lbl">Risk page 1 of 5 acknowledged</span><span class="val">2026-09-12 · 2:18 PM</span></div>
+        <div class="consent-row"><span class="lbl">Risk page 2 of 5 acknowledged</span><span class="val">2026-09-12 · 2:19 PM</span></div>
+        <div class="consent-row"><span class="lbl">Risk page 3 of 5 acknowledged</span><span class="val">2026-09-12 · 2:21 PM</span></div>
+        <div class="consent-row"><span class="lbl">Risk page 4 of 5 acknowledged</span><span class="val">2026-09-12 · 2:22 PM</span></div>
+        <div class="consent-row"><span class="lbl">Risk page 5 of 5 acknowledged</span><span class="val">2026-09-12 · 2:24 PM</span></div>
+        <div class="consent-row"><span class="lbl">Understanding check</span><span class="val yes">Passed · 5/5</span></div>
+        <div class="consent-row"><span class="lbl">Question asked by patient</span><span class="val">"How long until I can fly?"</span></div>
+        <div class="consent-row"><span class="lbl">Surgeon's answer recorded</span><span class="val">2026-09-12 · 2:31 PM</span></div>
+        <div class="consent-row"><span class="lbl">Patient confirmed understanding</span><span class="val yes">✓ 2026-09-12 · 2:33 PM</span></div>
+        <div class="consent-row"><span class="lbl">Financial policy signed</span><span class="val yes">✓ 2026-09-12 · 2:35 PM</span></div>
+        <div class="btn-row no-print">
+          <button class="btn sm">Download PDF</button>
+          <button class="btn sm">Attach to EHR</button>
+        </div>
+        <p class="muted" style="margin-top:12px">Neutral documentation only. This record does not flag the patient as high-risk or label expectations as unrealistic. It simply records what happened and when.</p>
+      </div>
+    </section>
+
+    <!-- ========== RECOVERY ========== -->
+    <section class="view" id="v-recovery">
+      <div class="top"><div class="hello"><h1>Recovery care</h1>
+      <p>Patient chooses. The AI books. The surgeon stays in control of clinical decisions.</p></div></div>
+      <div class="grid g2" style="margin-bottom:14px">
+        <div class="card">
+          <h2>Recovering patients</h2>
+          <div class="prow"><div class="top-line"><div><span class="who">S.N. · Abdominoplasty</span><div class="what">Home RN, 24 h · Provider A</div></div><span class="chip ok">On track</span></div></div>
+          <div class="prow"><div class="top-line"><div><span class="who">J.W. · Facelift</span><div class="what">Home RN, 12 h · Provider A</div></div><span class="chip warn">RN report flagged</span></div></div>
+          <div class="prow"><div class="top-line"><div><span class="who">K.P. · Breast augmentation</span><div class="what">Office follow-up</div></div><span class="chip ok">On track</span></div></div>
+          <div class="prow"><div class="top-line"><div><span class="who">M.T. · Rhinoplasty (out of town)</span><div class="what">Choosing recovery option</div></div><span class="chip warn">Awaiting choice</span></div></div>
+        </div>
+        <div class="card">
+          <h2>Recovery network</h2>
+          <table>
+            <thead><tr><th>Provider</th><th>Type</th><th>BAA</th><th>Insurance</th></tr></thead>
+            <tbody>
+              <tr><td>Provider A</td><td>Home RN</td><td class="yes">✓</td><td class="yes">$1M</td></tr>
+              <tr><td>Provider B</td><td>Recovery suite</td><td class="yes">✓</td><td class="yes">$1M</td></tr>
+              <tr><td>Provider C</td><td>Hotel + mobile RN</td><td class="part">⚠ Pending</td><td class="yes">$1M</td></tr>
+              <tr><td>Provider D</td><td>Lymphatic massage</td><td class="yes">✓</td><td class="part">⚠ Pending</td></tr>
+            </tbody>
+          </table>
+          <p class="muted" style="margin-top:12px">No referral fees. Ownership disclosed. Patient always chooses. Healthcare lawyer reviews the structure.</p>
+        </div>
+      </div>
+      <div class="card">
+        <h2>Nurse hand-off packet (draft · awaiting approval)</h2>
+        <div class="appr">
+          <div class="h"><span class="kind">Recovery care · Nurse hand-off</span><span class="chip warn">Needs your OK</span></div>
+          <div class="draft">Patient: J.W. · Facelift · Day 3
+Surgeon: Dr. Morgan
+Red flags to watch: unilateral swelling, fever above 101.5°F, drainage change, pain not controlled by medication
+Instructions: follow discharge sheet dated 2026-09-21
+Contact: on-call 949-555-0142</div>
+          <div class="btn-row no-print">
+            <button class="btn good sm">Approve &amp; send</button>
+            <button class="btn sm">Edit</button>
+            <button class="btn bad sm">Decline</button>
+          </div>
+        </div>
+        <div class="appr">
+          <div class="h"><span class="kind">Recovery care · Nurse visit report</span><span class="chip bad">Flagged to surgeon</span></div>
+          <div class="draft">Provider A reports: left-side swelling at Day 3 visit. Patient afebrile. Pain controlled. Surgeon paged 8:13a; returned call 8:21a.</div>
+          <div class="meta">Report is presented to the surgeon. The AI does not interpret or triage.</div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ========== TASKS ========== -->
+    <section class="view" id="v-tasks">
+      <div class="top"><div class="hello"><h1>Staff tasks</h1>
+      <p>Everything the AI handed to a human, in one board.</p></div></div>
+      <div class="grid g3" id="taskBoard"></div>
+    </section>
+
+    <!-- ========== OFFICE ========== -->
+    <section class="view" id="v-office">
+      <div class="top"><div class="hello"><h1>Office</h1>
+      <p>Credentials, equipment, vendors, staff coverage. The 7am report.</p></div></div>
+      <div class="grid g2">
+        <div class="card"><h2>Expiring soon</h2>
+          <table><tbody>
+            <tr><td>Dr. Morgan · DEA</td><td>42 days</td></tr>
+            <tr><td>RN · BLS</td><td>18 days</td></tr>
+            <tr><td>AAAASF accreditation</td><td>90 days</td></tr>
+            <tr><td>Malpractice · practice</td><td>120 days</td></tr>
+          </tbody></table>
+        </div>
+        <div class="card"><h2>Equipment safety logs</h2>
+          <table><tbody>
+            <tr><td>Autoclave · weekly spore test</td><td class="yes">✓ Logged</td></tr>
+            <tr><td>Anesthesia machine · monthly</td><td class="yes">✓ Logged</td></tr>
+            <tr><td>Defibrillator · monthly</td><td class="part">⚠ Due in 3 days</td></tr>
+            <tr><td>Emergency cart · monthly</td><td class="yes">✓ Logged</td></tr>
+          </tbody></table>
+        </div>
+      </div>
+    </section>
+
+    <!-- ========== FINANCE ========== -->
+    <section class="view" id="v-finance">
+      <div class="top"><div class="hello"><h1>Finance</h1>
+      <p>Every money action waits for a named human. The AI prepares; a person approves.</p></div></div>
+      <div class="grid g2" style="margin-bottom:14px">
+        <div class="card"><h2>Today's match</h2>
+          <table><tbody>
+            <tr><td>EHR collected</td><td>$18,400</td></tr>
+            <tr><td>Processor settled</td><td>$18,400</td></tr>
+            <tr><td>Lender disbursed</td><td>$6,200</td></tr>
+            <tr><td>Bank deposit</td><td>$24,600</td></tr>
+            <tr><td><b>Variance</b></td><td class="yes"><b>$0</b></td></tr>
+          </tbody></table>
+        </div>
+        <div class="card"><h2>Pending approvals</h2>
+          <div class="appr"><div class="h"><span class="kind">Refund request</span><span class="chip warn">Orange</span></div>
+          <div class="draft">Patient requests $1,200 refund for canceled lymphatic massage package. Policy allows 50% within 7 days.</div>
+          <div class="btn-row no-print"><button class="btn good sm">Approve</button><button class="btn sm">Edit</button><button class="btn bad sm">Decline</button></div></div>
+          <div class="appr"><div class="h"><span class="kind">Commission run</span><span class="chip warn">Orange</span></div>
+          <div class="draft">September commissions: Coordinator $2,140 · Front desk $980 · Nurse injector $1,620. Written plans on file.</div>
+          <div class="btn-row no-print"><button class="btn good sm">Approve</button><button class="btn sm">Edit</button><button class="btn bad sm">Decline</button></div></div>
+        </div>
+      </div>
+      <div class="card"><h2>QuickBooks posting (draft)</h2>
+        <table><thead><tr><th>Date</th><th>Account</th><th>Description</th><th>Amount</th></tr></thead><tbody>
+          <tr><td>2026-09-23</td><td>4000 · Surgical revenue</td><td>Abdominoplasty · S.N.</td><td>$12,400</td></tr>
+          <tr><td>2026-09-23</td><td>4000 · Surgical revenue</td><td>Rhinoplasty · A.R.</td><td>$9,200</td></tr>
+          <tr><td>2026-09-23</td><td>5100 · Supplies</td><td>Injectable restock · Verified distributor</td><td>−$2,180</td></tr>
+        </tbody></table>
+        <p class="muted" style="margin-top:10px">CPA package generated monthly. AI never moves money without a named approver.</p>
+      </div>
+    </section>
+
+    <!-- ========== NUMBERS ========== -->
+    <section class="view" id="v-numbers">
+      <div class="top"><div class="hello"><h1>Your numbers</h1>
+      <p>Hours saved and profit impact. Not revenue — profit.</p></div></div>
+      <div class="card">
+        <div class="roi-grid">
+          <div>
+            <div class="roi-field"><label>Consults per month</label><input id="roiConsults" type="number" value="40"></div>
+            <div class="roi-field"><label>Average surgery value ($)</label><input id="roiValue" type="number" value="9500"></div>
+            <div class="roi-field"><label>Average profit margin (%)</label><input id="roiMargin" type="number" value="35"></div>
+            <div class="roi-field"><label>Current no-show / lost rate (%)</label><input id="roiLost" type="number" value="18"></div>
+            <div class="roi-field"><label>Front desk hours per week</label><input id="roiHours" type="number" value="60"></div>
+            <div class="roi-field"><label>Loaded hourly cost ($)</label><input id="roiRate" type="number" value="32"></div>
+          </div>
+          <div>
+            <div class="roi-out">
+              <div class="big" id="roiProfit">$0</div>
+              <div class="sub">Additional monthly <b>profit</b> from recovered consults</div>
+              <hr>
+              <div class="big" id="roiHoursOut">0 h</div>
+              <div class="sub">Staff hours saved per month</div>
+              <hr>
+              <div class="big" id="roiDollars">$0</div>
+              <div class="sub">Staff cost saved per month</div>
+              <hr>
+              <div class="muted" id="roiNote">Adjust the numbers on the left.</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ========== WHY ========== -->
+    <section class="view" id="v-why">
+      <div class="top"><div class="hello"><h1>Why CoordinatorOS</h1>
+      <p>How we compare to five categories of tools you may already be paying for.</p></div></div>
+      <div class="card">
+        <table class="matrix">
+          <thead><tr><th>Capability</th><th>CoordinatorOS</th><th>AI receptionist</th><th>Practice EHR</th><th>Automation agency</th><th>Manual staff</th></tr></thead>
+          <tbody>
+            <tr><td>Answers calls/texts/Instagram 24/7</td><td class="yes">Yes</td><td class="yes">Yes</td><td class="part">Partial</td><td class="yes">Yes</td><td class="no">No</td></tr>
+            <tr><td>Books consults</td><td class="yes">Yes</td><td class="yes">Yes</td><td class="yes">Yes</td><td class="yes">Yes</td><td class="yes">Yes</td></tr>
+            <tr><td>Surgery readiness checklist</td><td class="yes">Yes</td><td class="no">No</td><td class="part">Partial</td><td class="no">No</td><td class="part">Manual</td></tr>
+            <tr><td>Recovery nurse coordination</td><td class="yes">Yes</td><td class="no">No</td><td class="no">No</td><td class="no">No</td><td class="part">Manual</td></tr>
+            <tr><td>Consent &amp; expectations record</td><td class="yes">Yes</td><td class="no">No</td><td class="part">Partial</td><td class="no">No</td><td class="part">Manual</td></tr>
+            <tr><td>Finance agents</td><td class="yes">Yes</td><td class="no">No</td><td class="part">Partial</td><td class="no">No</td><td class="part">Manual</td></tr>
+            <tr><td>Human approves every clinical/money action</td><td class="yes">Yes</td><td class="no">No</td><td class="no">No</td><td class="no">No</td><td class="yes">Yes</td></tr>
+            <tr><td>Works on top of existing EHR</td><td class="yes">Yes</td><td class="yes">Yes</td><td class="no">N/A</td><td class="yes">Yes</td><td class="yes">Yes</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </section>
+
+    <!-- ========== SAFETY ========== -->
+    <section class="view" id="v-safety">
+      <div class="top"><div class="hello"><h1>Safety rules</h1>
+      <p>The AI never does these things. Not a single one.</p></div></div>
+      <div class="card">
+        <div class="rule"><span class="x">✕</span><span>Never diagnoses or names a condition.</span></div>
+        <div class="rule"><span class="x">✕</span><span>Never says a symptom is normal.</span></div>
+        <div class="rule"><span class="x">✕</span><span>Never reads or analyzes wound photos.</span></div>
+        <div class="rule"><span class="x">✕</span><span>Never decides candidacy for surgery.</span></div>
+        <div class="rule"><span class="x">✕</span><span>Never tells a patient to stop or change medication.</span></div>
+        <div class="rule"><span class="x">✕</span><span>Never uses a nurse- or doctor-sounding name or title.</span></div>
+        <div class="rule"><span class="x">✕</span><span>Never steers patients to one recovery provider or takes referral fees.</span></div>
+        <div class="rule"><span class="x">✕</span><span>Never moves money without a named human approval.</span></div>
+        <div class="rule"><span class="x">✕</span><span>Never replies to legal threats. Escalates to a human immediately.</span></div>
+        <div class="rule"><span class="x">✕</span><span>Never gives medical advice on medications (GLP-1, blood thinners, hormones). Escalates.</span></div>
+        <div class="rule"><span class="x">✕</span><span>Never says "the doctor says" unless quoting a verified source.</span></div>
+        <div class="rule"><span class="x">✕</span><span><b>In an emergency</b> (chest pain, trouble breathing, severe bleeding, fever above 101.5°F), tells the patient to call 911 or go to the ER now.</span></div>
+      </div>
+    </section>
+
+    <!-- ========== SETUP ========== -->
+    <section class="view" id="v-setup">
+      <div class="top"><div class="hello"><h1>Demo setup</h1>
+      <p>Saved in your browser only. Nothing is sent anywhere.</p></div></div>
+      <div class="card">
+        <div class="form-row"><label>Practice name</label><input id="setPractice" value="Newport Aesthetic Surgery"></div>
+        <div class="form-row"><label>Surgeon name</label><input id="setSurgeon" value="Dr. Morgan"></div>
+        <div class="form-row"><label>City</label><input id="setCity" value="Newport Beach"></div>
+        <div class="form-row"><label>On-call phone</label><input id="setPhone" value="949-555-0142"></div>
+        <div class="btn-row">
+          <button class="btn primary" id="saveSetup">Save</button>
+          <button class="btn" id="resetSetup">Reset to defaults</button>
+        </div>
+        <p class="muted" style="margin-top:12px">This demo uses fictional patients, providers, and numbers. Do not enter real patient information.</p>
+      </div>
+    </section>
+
+    <!-- ========== PRINT LEAVE-BEHIND ========== -->
+    <section class="print-sheet" id="printSheet">
+      <h1>CoordinatorOS — Surgeon Brief</h1>
+      <p class="muted">One-page summary. Fictional demo data. Prepared for surgeon review.</p>
+
+      <h2>What it is</h2>
+      <p>CoordinatorOS is a set of AI agents that run the non-clinical work of an independent plastic surgery practice. It works on top of your existing EHR. It does not replace it. Every clinical or money action waits for a human approval.</p>
+
+      <div class="row">
+        <div class="col box">
+          <b>Hours saved</b><br>
+          <span style="font-size:20pt;font-weight:800;color:#0f766e">41 h</span><br>
+          <span class="muted">per week, average across pilot practices</span>
+        </div>
+        <div class="col box">
+          <b>Consults booked</b><br>
+          <span style="font-size:20pt;font-weight:800;color:#0f766e">9</span><br>
+          <span class="muted">overnight, without waking staff</span>
+        </div>
+        <div class="col box">
+          <b>Readiness flags</b><br>
+          <span style="font-size:20pt;font-weight:800;color:#0f766e">0</span><br>
+          <span class="muted">surgeries started with missing items</span>
+        </div>
+      </div>
+
+      <h2>What the agents do</h2>
+      <table>
+        <tr><td><b>Lead &amp; Consult</b></td><td>Answers calls, texts, Instagram, web. Books consults. Missed-call text-back.</td></tr>
+        <tr><td><b>Patient Coordinator</b></td><td>Quote follow-up, financing, deposits, pre-op paperwork.</td></tr>
+        <tr><td><b>Surgery &amp; Room Dispatch</b></td><td>OR blocks, anesthesia, rooms, equipment, waitlist.</td></tr>
+        <tr><td><b>Recovery Care</b></td><td>Patient chooses recovery option. Nurse hand-off packet. Visit reports presented to surgeon.</td></tr>
+        <tr><td><b>Reactivation &amp; Reviews</b></td><td>Dormant patients, review requests, with consent and limits.</td></tr>
+        <tr><td><b>Inventory &amp; Traceability</b></td><td>Injectable/implant lot tracking, reorder, verified distributor.</td></tr>
+        <tr><td><b>Readiness &amp; Compliance</b></td><td>72 h before surgery: consent, clearance, balance, ride, recovery plan, medication flags.</td></tr>
+        <tr><td><b>Office Manager</b></td><td>Staff coverage, license/DEA/BLS/ACLS/malpractice/accreditation expiry, equipment logs.</td></tr>
+        <tr><td><b>Staff Helpdesk</b></td><td>Policy manual answers, new-hire checklists, training tracking.</td></tr>
+        <tr><td><b>Quote, Deposit &amp; Financing</b></td><td>Approved price list, deposit links, two lenders.</td></tr>
+        <tr><td><b>Refunds &amp; Chargebacks</b></td><td>Applies signed financial policy, drafts decisions, builds evidence.</td></tr>
+        <tr><td><b>Books, Close &amp; Commissions</b></td><td>Daily match: EHR vs processor vs lender vs bank. CPA package. Tiered commissions.</td></tr>
+        <tr><td><b>Consent &amp; Expectations</b></td><td>Time-stamped record. Neutral documentation. Surgeon's answers to patient questions.</td></tr>
+      </table>
+
+      <h2>What the AI never does</h2>
+      <p>Never diagnoses. Never says a symptom is normal. Never reads wound photos. Never decides candidacy. Never tells a patient to change medication. Never uses a nurse- or doctor-sounding name. Never steers patients to one recovery provider or takes referral fees. Never moves money without approval. Never replies to legal threats. In an emergency, tells the patient to call 911 or go to the ER now.</p>
+
+      <h2>Pricing</h2>
+      <table>
+        <tr><th>Plan</th><th>Setup</th><th>Monthly</th><th>Contents</th></tr>
+        <tr><td>90-day Pilot</td><td>$3,000 (credited)</td><td>included</td><td>Front office for one practice</td></tr>
+        <tr><td>Starter</td><td>$3,500</td><td>$900</td><td>Front office: all channels, booking, follow-up, reviews, multilingual</td></tr>
+        <tr><td>Practice</td><td>$9,500</td><td>$2,500</td><td>Starter + coordinator, readiness, dispatch, recovery, consent, office</td></tr>
+        <tr><td>Full</td><td>$18,000</td><td>$4,500</td><td>Practice + finance agents + owner dashboard</td></tr>
+      </table>
+
+      <h2>Next step</h2>
+      <p>Start with a 90-day pilot. $3,000 setup (credited to your first invoice if you continue). We install, train your team, and run side-by-side with your current process. If it doesn't save you hours in 90 days, you don't continue.</p>
+
+      <p class="muted" style="margin-top:18pt">This document is fictional demonstration material. No real patient data is used. Pricing and features subject to change. Not legal or medical advice.</p>
+    </section>
+
+  </main>
+</div>
+
+<!-- ================= MOBILE NAV ================= -->
+<nav class="mobile-nav" id="mobileNav"></nav>
+
+<script>
+/* =========================================================
+   CoordinatorOS Demo v3 — single file, vanilla JS
+   ========================================================= */
+
+const NAV = [
+  {id:'today',    ico:'◉', label:'Today'},
+  {id:'approvals',ico:'✓', label:'Needs OK', tag:'5'},
+  {id:'leads',    ico:'◎', label:'Leads'},
+  {id:'chat',     ico:'✦', label:'Talk to AI'},
+  {id:'readiness',ico:'⚑', label:'Readiness'},
+  {id:'consent',  ico:'✍', label:'Consent'},
+  {id:'recovery', ico:'♡', label:'Recovery'},
+  {id:'tasks',    ico:'▤', label:'Tasks'},
+  {id:'office',   ico:'⌂', label:'Office'},
+  {id:'finance',  ico:'$', label:'Finance'},
+  {id:'numbers',  ico:'↗', label:'Numbers'},
+  {id:'why',      ico:'★', label:'Why'},
+  {id:'safety',   ico:'⛨', label:'Safety'},
+  {id:'setup',    ico:'⚙', label:'Setup'}
+];
+
+const DEFAULTS = {
+  practice:'Newport Aesthetic Surgery',
+  surgeon:'Dr. Morgan',
+  city:'Newport Beach',
+  phone:'949-555-0142'
+};
+function getSettings(){
+  try{ return Object.assign({}, DEFAULTS, JSON.parse(localStorage.getItem('cos_setup')||'{}')); }
+  catch(e){ return Object.assign({}, DEFAULTS); }
+}
+function saveSettings(s){ localStorage.setItem('cos_setup', JSON.stringify(s)); }
+
+function getTheme(){ return localStorage.getItem('cos_theme') || 'light'; }
+function setTheme(t){ localStorage.setItem('cos_theme', t); document.documentElement.setAttribute('data-theme', t); }
+
+function renderNav(){
+  const nav = document.getElementById('nav');
+  const mob = document.getElementById('mobileNav');
+  nav.innerHTML = NAV.map(n=>`
+    <button data-go="${n.id}">
+      <span class="ico">${n.ico}</span>${n.label}
+      ${n.tag?`<span class="tag">${n.tag}</span>`:''}
+    </button>`).join('');
+  mob.innerHTML = NAV.map(n=>`
+    <button data-go="${n.id}">
+      <span class="ico">${n.ico}</span>${n.label.length>8?n.label.slice(0,7)+'…':n.label}
+    </button>`).join('');
+  document.querySelectorAll('[data-go]').forEach(b=>{
+    b.addEventListener('click',()=>go(b.dataset.go));
+  });
+}
+
+function go(id){
+  document.querySelectorAll('.view').forEach(v=>v.classList.remove('active'));
+  const v = document.getElementById('v-'+id);
+  if(v) v.classList.add('active');
+  document.querySelectorAll('[data-go]').forEach(b=>{
+    b.classList.toggle('active', b.dataset.go===id);
+  });
+  window.scrollTo({top:0,behavior:'instant'});
+  if(id==='numbers') calcROI();
+  if(id==='chat' && !chatStarted) startChat();
+}
+
+function renderGreeting(){
+  const s = getSettings();
+  const h = new Date().getHours();
+  const g = h<12?'Good morning':h<18?'Good afternoon':'Good evening';
+  document.getElementById('greeting').textContent = `${g}, ${s.surgeon}.`;
+  document.getElementById('chatTitle').textContent = `${s.practice} · AI Assistant`;
+}
+
+const APPROVALS = [
+  {kind:'Recovery care · Nurse hand-off', draft:'Patient: J.W. · Facelift · Day 3\nSurgeon: Dr. Morgan\nRed flags: unilateral swelling, fever above 101.5°F, drainage change, pain not controlled\nInstructions: follow discharge sheet dated 2026-09-21\nContact: on-call 949-555-0142'},
+  {kind:'Finance · Refund request', draft:'Patient requests $1,200 refund for canceled lymphatic massage package. Policy allows 50% within 7 days.'},
+  {kind:'Finance · Commission run', draft:'September commissions: Coordinator $2,140 · Front desk $980 · Nurse injector $1,620. Written plans on file.'},
+  {kind:'Leads · Quote follow-up', draft:'Draft message to lead who received rhinoplasty quote 6 days ago and has not booked. Friendly check-in, offer two consult slots, no pressure.'},
+  {kind:'Consent · Surgeon answer', draft:'Patient asked "How long until I can fly?" Surgeon answered: "Typically 7–10 days for short flights; 2 weeks for long-haul. I will confirm at your Day 7 visit."'}
+];
+function renderApprovals(){
+  document.getElementById('approvalList').innerHTML = APPROVALS.map((a,i)=>`
+    <div class="appr" data-i="${i}">
+      <div class="h"><span class="kind">${a.kind}</span><span class="chip warn">Needs your OK</span></div>
+      <div class="draft">${a.draft}</div>
+      <div class="btn-row no-print">
+        <button class="btn good sm" data-act="approve">Approve &amp; send</button>
+        <button class="btn sm" data-act="edit">Edit</button>
+        <button class="btn bad sm" data-act="decline">Decline</button>
+      </div>
+    </div>`).join('');
+  document.querySelectorAll('.appr [data-act]').forEach(b=>{
+    b.addEventListener('click',()=>{
+      const card = b.closest('.appr');
+      const label = b.dataset.act==='approve'?'Approved':b.dataset.act==='edit'?'Opened for edit':'Declined';
+      card.style.opacity='.5';
+      b.closest('.btn-row').innerHTML = `<span class="chip ok">${label} · logged</span>`;
+    });
+  });
+}
+
+const LEADS = [
+  {name:'M.T.', channel:'Instagram', interest:'Rhinoplasty', score:92, status:'Recovery options sent', next:'Coordinator call Thu 3pm'},
+  {name:'J.R.', channel:'Missed call', interest:'Facelift consult', score:85, status:'Booked online', next:'Consult Fri 10am'},
+  {name:'S.P.', channel:'Text', interest:'Breast augmentation', score:88, status:'Financing link opened', next:'Await lender decision'},
+  {name:'A.K.', channel:'Web form', interest:'Blepharoplasty', score:71, status:'Quote sent', next:'Follow-up in 2 days'},
+  {name:'D.M.', channel:'Phone', interest:'Revision rhinoplasty', score:64, status:'Info packet sent', next:'Nurse call scheduled'},
+  {name:'L.V.', channel:'Instagram', interest:'GLP-1 question', score:40, status:'Escalated to clinical team', next:'Surgeon review'}
+];
+function renderLeads(){
+  document.getElementById('leadRows').innerHTML = LEADS.map(l=>`
+    <tr>
+      <td><b>${l.name}</b></td>
+      <td>${l.channel}</td>
+      <td>${l.interest}</td>
+      <td><span class="chip ${l.score>=85?'ok':l.score>=65?'warn':'bad'}">${l.score}</span></td>
+      <td>${l.status}</td>
+      <td class="muted">${l.next}</td>
+    </tr>`).join('');
+}
+
+const READINESS = [
+  {name:'S.N. · Abdominoplasty · 7:30', items:[
+    ['Consent record',1],['Clearance',1],['Balance paid',1],['Ride home',1],['Recovery plan',1],['Medication review',1]
+  ]},
+  {name:'A.R. · Rhinoplasty · 11:30', items:[
+    ['Consent record',1],['Labs',1],['Balance paid',1],['Ride home',0],['Recovery plan',1],['Medication review',1]
+  ]},
+  {name:'D.L. · Blepharoplasty · 2:30', items:[
+    ['Consent record',1],['Balance paid',0],['Ride home',1],['Recovery plan',1],['Medication review',1]
+  ]},
+  {name:'K.M. · Breast augmentation · Tomorrow', items:[
+    ['Consent record',1],['Clearance',1],['Balance paid',1],['Ride home',1],['Recovery plan',1],['Medication review',0]
+  ]}
+];
+function renderReadiness(){
+  document.getElementById('readinessCards').innerHTML = READINESS.map(r=>`
+    <div class="card">
+      <h2>${r.name}</h2>
+      ${r.items.map(([lbl,ok])=>`
+        <div class="consent-row">
+          <span class="lbl">${lbl}</span>
+          <span class="val ${ok?'yes':'no'}">${ok?'✓ Ready':'✕ Flagged'}</span>
+        </div>`).join('')}
+      <div class="btn-row no-print">
+        <button class="btn sm">Open case</button>
+        <button class="btn sm">Notify surgeon</button>
+      </div>
+    </div>`).join('');
+}
+
+const TASKS = {
+  'To do':[
+    'Call A.R. re: ride home (flagged 5:30a)',
+    'Collect $2,400 balance for D.L. before 2:30',
+    'Confirm Provider C BAA before M.T. booking',
+    'Verify GLP-1 medication with anesthesia (K.M.)'
+  ],
+  'Doing':[
+    'M.T. recovery option call — coordinator Thu 3pm',
+    'J.W. Day 3 RN report — surgeon reviewing',
+    'September commission run — awaiting approval'
+  ],
+  'Done':[
+    'S.N. hand-off packet approved',
+    'K.P. Day 5 check-in answered',
+    'T.B. Day 7 visit rebooked',
+    'Provider A BAA renewed'
+  ]
+};
+function renderTasks(){
+  document.getElementById('taskBoard').innerHTML = Object.entries(TASKS).map(([col,items])=>`
+    <div class="card">
+      <h2>${col} <span class="muted" style="font-weight:400">(${items.length})</span></h2>
+      ${items.map(t=>`<div class="prow"><div class="what">${t}</div></div>`).join('')}
+    </div>`).join('');
+}
+
+function calcROI(){
+  const c = +document.getElementById('roiConsults').value||0;
+  const v = +document.getElementById('roiValue').value||0;
+  const m = (+document.getElementById('roiMargin').value||0)/100;
+  const lost = (+document.getElementById('roiLost').value||0)/100;
+  const hrs = +document.getElementById('roiHours').value||0;
+  const rate = +document.getElementById('roiRate').value||0;
+  const recovered = c*lost*0.6;
+  const profit = recovered*v*m;
+  const hoursSaved = hrs*0.4;
+  const dollarsSaved = hoursSaved*rate;
+  document.getElementById('roiProfit').textContent = '$'+Math.round(profit).toLocaleString();
+  document.getElementById('roiHoursOut').textContent = Math.round(hoursSaved)+' h';
+  document.getElementById('roiDollars').textContent = '$'+Math.round(dollarsSaved).toLocaleString();
+  document.getElementById('roiNote').textContent =
+    `Assumes 60% of lost consults recovered and 40% of front-desk hours automated. Profit impact, not revenue.`;
+}
+['roiConsults','roiValue','roiMargin','roiLost','roiHours','roiRate'].forEach(id=>{
+  document.addEventListener('input',e=>{ if(e.target.id===id) calcROI(); });
+});
+
+/* ---------- Chat ---------- */
+let chatStarted = false;
+const SCENARIOS = [
+  {label:'Price question', text:'How much does a rhinoplasty cost?'},
+  {label:'Out-of-town recovery', text:'I am flying in from Seattle. What are my recovery options?'},
+  {label:'GLP-1 medication', text:'I am on Ozempic. Does that affect my surgery?'},
+  {label:'Post-op concern', text:'My incision is red and I have a fever.'},
+  {label:'Revision abroad', text:'I had a rhinoplasty in Turkey and I am unhappy. Can you help?'},
+  {label:'Korean-speaking', text:'안녕하세요, 코 수술 상담을 받고 싶어요.'}
+];
+
+const SCRIPTED = [
+  {keys:['price','cost','how much','fee','$'], reply:
+`Rhinoplasty at our practice typically starts in the range of $9,000–$14,000 depending on complexity. The exact quote is given at your consultation after the surgeon examines you. Would you like me to check two or three consult times?`},
+  {keys:['seattle','fly','out of town','travel','hotel','recovery option'], reply:
+`We can support out-of-town recovery. You have three choices: a private-duty nurse at your hotel, a recovery suite, or a hotel with mobile nurse visits. I can send a link with all three and book a coordinator call. Which sounds best?`},
+  {keys:['ozempic','wegovy','glp','medication','blood thinner','hormone'], reply:
+`Thank you for telling me. Medication questions need the surgeon's or anesthesia's review — I am an AI and cannot answer medical questions. I am sending your note to the clinical team now. They will follow up before your consult.`},
+  {keys:['red','fever','swelling','pain','infection','wound','bleeding'], reply:
+`I am an AI and cannot assess symptoms. If you have a fever above 101.5°F, severe pain, or heavy bleeding, please call 911 or go to the nearest emergency room now. Otherwise, I am alerting the on-call nurse to call you.`},
+  {keys:['turkey','abroad','revision','unhappy','previous'], reply:
+`Thank you for sharing that — it takes courage. Revision surgery is something our surgeon discusses in person. I can book a confidential consult and send a records-upload link so the surgeon can review your history. No judgment here.`},
+  {keys:['안녕','코','수술','상담'], reply:
+`안녕하세요. 저는 AI 어시스턴트이며 간호사나 의사가 아닙니다. 코 수술 상담을 예약해 드릴 수 있습니다. 편하신 시간 두세 개를 알려주시면 확인해 드리겠습니다.`},
+  {keys:['book','appointment','consult','schedule','available'], reply:
+`I can check availability. We have Thursday 3pm, Friday 10am, and Monday 1pm open for a rhinoplasty consult. Which works best? I will book it and send a confirmation.`},
+  {keys:['financing','payment','loan','carecredit','cherry'], reply:
+`We offer two financing options — you apply directly with the lender and see your terms before committing. I can text or email you both links. Which do you prefer?`},
+  {keys:['insurance','cover','reimburse'], reply:
+`Most cosmetic procedures are not covered by insurance. If your procedure may be partially covered (for example, breast reconstruction or septoplasty), our team can check your benefits. Would you like a benefits check?`},
+  {keys:['lawyer','attorney','sue','legal','malpractice'], reply:
+`I am not able to respond to legal matters. I am forwarding your message to the practice manager, who will contact you directly.`}
+];
+
+function fallbackReply(text){
+  const t = text.toLowerCase();
+  for(const s of SCRIPTED){ if(s.keys.some(k=>t.includes(k))) return s.reply; }
+  return `Thanks for reaching out. I am an AI assistant for the practice — not a nurse or doctor. I can help with booking, pricing ranges, recovery options, and general questions. For anything clinical, I will pass your note to the clinical team. What would you like to do?`;
+}
+
+function addMsg(who, text){
+  const body = document.getElementById('chatBody');
+  const div = document.createElement('div');
+  div.className = 'msg '+who;
+  div.textContent = text;
+  body.appendChild(div);
+  body.scrollTop = body.scrollHeight;
+}
+function addTyping(){
+  const body = document.getElementById('chatBody');
+  const div = document.createElement('div');
+  div.className = 'msg bot typing';
+  div.innerHTML = '<span></span><span></span><span></span>';
+  body.appendChild(div);
+  body.scrollTop = body.scrollHeight;
+  return div;
+}
+
+async function aiReply(text){
+  try{
+    if(window.claude && typeof window.claude.use === 'function'){
+      const t = addTyping();
+      const res = await window.claude.use('sample', {
+        modelTier:'quick',
+        prompt:`You are the AI assistant for ${getSettings().practice}, a plastic surgery practice. Rules: you are an AI, not a nurse or doctor. Never give medical advice. Never say a symptom is normal. Never judge candidacy. Medication questions escalate. Recovery care: explain the practice offers home RN, recovery suite, or hotel + mobile visits. Prices: approved starting ranges only. Reply warmly in 2-4 short sentences, plain text. Patient said: ${text}`
+      });
+      t.remove();
+      if(res && (res.text || res.content)) return res.text || res.content;
+    }
+  }catch(e){}
+  await new Promise(r=>setTimeout(r, 550+Math.random()*500));
+  return fallbackReply(text);
+}
+
+function startChat(){
+  chatStarted = true;
+  const s = getSettings();
+  addMsg('sys','Demo · fictional patient · no real data');
+  addMsg('bot',`Hi, I'm the AI assistant for ${s.practice}. I'm an AI, not a nurse or doctor. I can help with booking, pricing ranges, and recovery options. For anything clinical, I'll pass your note to the team. What can I help with?`);
+  document.getElementById('scenRow').innerHTML = SCENARIOS.map((s,i)=>
+    `<button data-scen="${i}">${s.label}</button>`).join('');
+  document.querySelectorAll('[data-scen]').forEach(b=>{
+    b.addEventListener('click',()=>sendUser(SCENARIOS[+b.dataset.scen].text));
+  });
+}
+
+async function sendUser(text){
+  if(!text.trim()) return;
+  addMsg('me', text);
+  const t = addTyping();
+  const reply = await aiReply(text);
+  t.remove();
+  addMsg('bot', reply);
+}
+
+document.getElementById('chatForm').addEventListener('submit',e=>{
+  e.preventDefault();
+  const inp = document.getElementById('chatInput');
+  const v = inp.value;
+  inp.value='';
+  sendUser(v);
+});
+
+function loadSetup(){
+  const s = getSettings();
+  document.getElementById('setPractice').value = s.practice;
+  document.getElementById('setSurgeon').value = s.surgeon;
+  document.getElementById('setCity').value = s.city;
+  document.getElementById('setPhone').value = s.phone;
+}
+document.getElementById('saveSetup').addEventListener('click',()=>{
+  saveSettings({
+    practice:document.getElementById('setPractice').value,
+    surgeon:document.getElementById('setSurgeon').value,
+    city:document.getElementById('setCity').value,
+    phone:document.getElementById('setPhone').value
+  });
+  renderGreeting();
+  alert('Saved to this browser only.');
+});
+document.getElementById('resetSetup').addEventListener('click',()=>{
+  localStorage.removeItem('cos_setup');
+  loadSetup(); renderGreeting();
+});
+
+document.getElementById('themeBtn').addEventListener('click',()=>{
+  setTheme(getTheme()==='light'?'dark':'light');
+});
+
+document.getElementById('printBtn').addEventListener('click',()=>{
+  window.print();
+});
+
+(function init(){
+  setTheme(getTheme());
+  renderNav();
+  renderGreeting();
+  renderApprovals();
+  renderLeads();
+  renderReadiness();
+  renderTasks();
+  loadSetup();
+  calcROI();
+  go('today');
+})();
+</script>
+</body>
+</html>
